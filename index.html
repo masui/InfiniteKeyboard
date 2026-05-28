@@ -2,18 +2,152 @@
 <html lang="ja">
   <head>
     <meta charset="utf-8">
-    <title>2オクターブ無限音階</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>2オクターブ無限音階キーボード</title>
     <script src="./keyboard.js" defer></script>
-    <style type="text/css">
+    <style>
+      :root {
+        --bg0: #07060f;
+        --bg1: #140a2e;
+        --cyan: #22d3ee;
+        --magenta: #d946ef;
+        --text: #e7e3ff;
+        --muted: #9a93c4;
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body { height: 100%; margin: 0; }
+
+      body {
+        min-height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2.4rem;
+        padding: 3rem 1.25rem;
+        color: var(--text);
+        font-family: system-ui, "Hiragino Sans", "Noto Sans JP", sans-serif;
+        background:
+          radial-gradient(900px 600px at 15% -10%, rgba(217, 70, 239, 0.18), transparent 60%),
+          radial-gradient(900px 600px at 85% 0%, rgba(34, 211, 238, 0.16), transparent 60%),
+          linear-gradient(160deg, var(--bg1), var(--bg0) 70%);
+        background-attachment: fixed;
+      }
+
+      h1 {
+        margin: 0;
+        text-align: center;
+        font-size: clamp(1.7rem, 5vw, 3rem);
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        background: linear-gradient(100deg, var(--cyan), var(--magenta));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        filter: drop-shadow(0 0 22px rgba(34, 211, 238, 0.35));
+      }
+
+      .info {
+        max-width: 32rem;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+        text-align: center;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      kbd {
+        font-family: ui-monospace, monospace;
+        font-size: 0.85em;
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 0.35rem;
+        padding: 0.05em 0.45em;
+      }
+
+      .source {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        text-decoration: none;
+        color: var(--text);
+        font-weight: 600;
+        padding: 0.55rem 1.2rem;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: rgba(255, 255, 255, 0.04);
+        transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+      }
+
+      .source:hover {
+        border-color: var(--cyan);
+        box-shadow: 0 0 18px rgba(34, 211, 238, 0.35);
+        transform: translateY(-1px);
+      }
+
+      .overlay {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        background: rgba(7, 6, 15, 0.72);
+        backdrop-filter: blur(6px);
+        cursor: pointer;
+        z-index: 10;
+        transition: opacity 0.5s ease;
+      }
+
+      .overlay.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .overlay span {
+        font-size: clamp(1.2rem, 4vw, 1.8rem);
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        padding: 1rem 2rem;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.03);
+        animation: pulse 1.8s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(34, 211, 238, 0); transform: scale(1); }
+        50% { box-shadow: 0 0 40px 4px rgba(34, 211, 238, 0.45); transform: scale(1.03); }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .overlay span { animation: none; }
+      }
     </style>
   </head>
   <body>
     <h1>2オクターブ無限音階キーボード</h1>
-    <ul>
-      <li>最初に画面をクリックしてください</li>
-      <li>Q, W, E..., C, V, B... などのキーを押すと音が出ます</li>
-      <li>E で出るド音と / で出るド音が同じになります</li>
-      <li><a href="https://github.com/masui/InfiniteKeyboard">ソース</a></li>
+
+    <ul class="info">
+      <li><kbd>Q</kbd> <kbd>W</kbd> <kbd>E</kbd> … や <kbd>Z</kbd> <kbd>X</kbd> <kbd>C</kbd> … のキーを押すと音が出ます</li>
+      <li><kbd>E</kbd> で出るド音と <kbd>/</kbd> で出るド音が同じ高さに聞こえます</li>
+      <li><a class="source" href="https://github.com/masui/InfiniteKeyboard">View source on GitHub</a></li>
     </ul>
+
+    <div class="overlay" id="overlay">
+      <span>クリックして開始</span>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const overlay = document.getElementById('overlay');
+        addEventListener('mousedown', () => overlay.classList.add('hidden'), { once: true });
+      });
+    </script>
   </body>
 </html>
