@@ -1,35 +1,29 @@
 'use strict';
 
-// 物理キーと音名の対応。同じ音名を複数のキーが共有することで、
-// 高いオクターブと低いオクターブが滑らかに繋がる(無限音階)。
-const KEYS = [
-  'q', '2', 'w', 'e', '4', 'r', '5', 't', 'y', '7', 'u', '8', 'i', '9', 'o', 'p',
-  'z', 's', 'x', 'c', 'f', 'v', 'g', 'b', 'n', 'j', 'm', 'k', ',', 'l', '.', '/',
-];
-
-const NOTES = [
-  'A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A2', 'A2#', 'B2', 'C2',
-  'A2', 'A2#', 'B2', 'C2', 'C2#', 'D2', 'D2#', 'E2', 'F2', 'F2#', 'G2', 'G2#', 'A3', 'A3#', 'B3', 'C3', 'C3#',
-];
-
 const REFERENCE_FREQ = 440; // 基準ピッチ A4
 const OCTAVE_LAYERS = 9;    // 1音を重ねる倍音レイヤー数
 const MAX_GAIN = 0.1;
 
-// 音名のインデックスから基準周波数を求める(平均律)
-const noteFrequency = (index) =>
-  index < 16
-    ? REFERENCE_FREQ * 2 ** (index / 12)
-    : REFERENCE_FREQ * 2 ** ((index - 4) / 12);
+// 音名 → A4(440Hz) からの半音数
+const SEMITONES = {
+  A: 0, 'A#': 1, B: 2, C: 3, 'C#': 4, D: 5, 'D#': 6, E: 7, F: 8, 'F#': 9, G: 10, 'G#': 11,
+  A2: 12, 'A2#': 13, B2: 14, C2: 15, 'C2#': 16, D2: 17, 'D2#': 18, E2: 19, F2: 20, 'F2#': 21, G2: 22, 'G2#': 23,
+  A3: 24, 'A3#': 25, B3: 26, C3: 27,
+};
 
-// キー文字 → 音名
-const keyToNote = new Map(KEYS.map((key, i) => [key, NOTES[i]]));
+// キー → 音名(MacBook US配列)。上段と下段でオクターブが重なり無限音階になる。
+const keyToNote = new Map([
+  // 上段: アルファベット段が白鍵、数字段が黒鍵
+  ['q', 'A'], ['2', 'A#'], ['w', 'B'], ['e', 'C'], ['4', 'C#'], ['r', 'D'], ['5', 'D#'], ['t', 'E'],
+  ['y', 'F'], ['7', 'F#'], ['u', 'G'], ['8', 'G#'], ['i', 'A2'], ['9', 'A2#'], ['o', 'B2'], ['p', 'C2'],
+  ['-', 'C2#'], ['[', 'D2'], ['=', 'D2#'], [']', 'E2'],
+  // 下段: 上段とオクターブが重なる
+  ['z', 'A2'], ['s', 'A2#'], ['x', 'B2'], ['c', 'C2'], ['f', 'C2#'], ['v', 'D2'], ['g', 'D2#'], ['b', 'E2'],
+  ['n', 'F2'], ['j', 'F2#'], ['m', 'G2'], ['k', 'G2#'], [',', 'A3'], ['l', 'A3#'], ['.', 'B3'], ['/', 'C3'],
+]);
 
-// 上段(P の右)の続き。下段と同じ音名を共有して音階を上へ伸ばす。
-keyToNote.set('[', 'D2');
-keyToNote.set(']', 'E2');
-keyToNote.set('-', 'C2#');
-keyToNote.set('=', 'D2#');
+// 音名から基準周波数を求める(平均律)
+const noteFrequency = (note) => REFERENCE_FREQ * 2 ** (SEMITONES[note] / 12);
 
 // 440Hz から離れるほど小さくなる釣鐘状のゲイン(シェパードトーン)
 const layerGain = (freq) => 2 ** -Math.abs(Math.log2(freq / REFERENCE_FREQ)) * MAX_GAIN;
@@ -42,10 +36,8 @@ const start = () => {
   const ctx = new AudioContext();
   voices = new Map();
 
-  NOTES.forEach((note, index) => {
-    if (voices.has(note)) return; // 重複する音名は一度だけ生成
-
-    const freq = noteFrequency(index);
+  for (const note of new Set(keyToNote.values())) {
+    const freq = noteFrequency(note);
     const layers = [];
     for (let layer = 0; layer < OCTAVE_LAYERS; layer++) {
       const frequency = (freq * 4 ** layer) / 16;
@@ -56,7 +48,7 @@ const start = () => {
       layers.push({ gain, level: layerGain(frequency) });
     }
     voices.set(note, layers);
-  });
+  }
 };
 
 const setVoiceActive = (note, active) => {
