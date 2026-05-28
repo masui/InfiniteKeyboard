@@ -1,10 +1,10 @@
 /*
 */
 
-$(function() {
-    $('body').on('keydown',keydown)
-    $('body').on('keyup',keyup)
-    $('body').on('mousedown',Start)
+window.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('keydown',keydown)
+    document.addEventListener('keyup',keyup)
+    document.addEventListener('mousedown',Start,{once:true})
 });
 
 keys = [
@@ -70,7 +70,6 @@ function setkey(c,freq){
   	//.on('mousedown',keyhandler)
   	//.on('mouseup',keyhandler)
   	//.attr('id',c)
-    $('body').append($('<span> </span>'))
     for(var s=0;s<9;s++){
   	gain[c+s] = new GainNode(audioctx);
   	//gain[c+s] = audioctx.createGain();
