@@ -25,6 +25,12 @@ const noteFrequency = (index) =>
 // キー文字 → 音名
 const keyToNote = new Map(KEYS.map((key, i) => [key, NOTES[i]]));
 
+// 上段(P の右)の続き。下段と同じ音名を共有して音階を上へ伸ばす。
+keyToNote.set('[', 'D2');
+keyToNote.set(']', 'E2');
+keyToNote.set('-', 'C2#');
+keyToNote.set('=', 'D2#');
+
 // 440Hz から離れるほど小さくなる釣鐘状のゲイン(シェパードトーン)
 const layerGain = (freq) => 2 ** -Math.abs(Math.log2(freq / REFERENCE_FREQ)) * MAX_GAIN;
 
